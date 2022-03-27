@@ -1,0 +1,179 @@
+
+<textarea id="char_data" cols="30" rows="16" style="display: inline-block;">
+Mathew, Deathwing
+Chilldps, Stormscale
+Gragorr, Tarren-Mill</textarea>
+<div id="char_stats" style="display: inline-block;">
+</div>
+<br>
+<progress id="fetch_prog" value="0" max="0" style="width: 241px;"></progress>
+<br>
+<button onclick="load_characters()">Fetch</button> 
+<button onclick="calc_optimal()">Compute</button>
+<button onclick="clear()">Clear</button>
+<script>
+    var mkeys = [];
+    // Requests:
+    var progress = 0;
+    var total = 0;
+
+    function load_data(dom, obj) {
+        var heads = []; // Dungeon, Fortified, Tyrannical, Rating, Best Time, Best Affixes (-), World, Region
+        var data = [];
+        table = dom.getElementsByTagName("table")[3];
+        var th = table.getElementsByTagName("th");
+        for(var i = 0; i < th.length; i++) {
+            heads.push(th[i].textContent.split(" ")[0]);
+        }
+        var rows = table.getElementsByTagName("tr");
+        for(var i = 1; i < rows.length; i++) {
+            var cells = table.getElementsByTagName("tr")[i].cells;
+            var cell_data = [];
+            for(var j = 0; j < cells.length; j++) {
+                cell_data.push(cells[j].innerText);
+            }
+            data.push(cell_data);
+        }
+        //console.log(data);
+        //console.log(heads);
+        
+        for(var i = 0; i < data.length; i++) {
+            var tyranical = parseInt(data[i][2]);
+            var fortified = parseInt(data[i][1]);
+            if(isNaN(tyranical))
+                tyranical = 0;
+            if(isNaN(fortified))
+                fortified = 0;
+            obj.tyranical.push([dung_short_name(data[i][0]), tyranical])
+            obj.fortified.push([dung_short_name(data[i][0]), fortified])
+        }
+    }
+
+    // Returns the short name of a dungeons full name
+    // Ex: MISTSMists of Tirna Scithe  -> MISTS
+    function dung_short_name(full_name) {
+        return full_name.split(" ")[0].match("[A-Z]*")[0].slice(0,-1);
+    }
+
+    function load_character(name, realm) {
+
+        // Creating Our XMLHttpRequest object 
+        var xhr = new XMLHttpRequest();
+        const parser = new DOMParser();
+
+        // Making our connection  
+        var url = `http://localhost:8080/https://raider.io/characters/eu/${realm}/${name}`;
+        console.log("Requesting " + url + " ("+name+", "+realm+")")
+        xhr.open("GET", url, true);
+
+        // function execute after request is successful 
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                //console.log(this.responseText);
+                dom = parser.parseFromString(this.responseText, "text/html");
+                mkeys.push({name: name, realm: realm, tyranical: [], fortified: []});
+                load_data(dom, mkeys[mkeys.length-1]);
+                mkeys[mkeys.length-1].tyranical.sort
+                console.log("Loaded ("+name+", "+realm+")")
+                progress++;
+                document.getElementById("fetch_prog").value = progress;
+                console.log(progress + "/" + total)
+            }
+        }
+        // Sending our request 
+        xhr.send();
+        total++;
+        console.log(progress + "/" + total)
+    }
+
+    function load_characters() {
+        var char_data = document.getElementById("char_data").value.split("\n");
+        progress = 0;
+        total = 0;
+        document.getElementById("fetch_prog").value = 0;
+        document.getElementById("fetch_prog").max = char_data.length;
+        char_data.forEach(element => {
+            var character = element.split(","); //Name, Realm
+            load_character(character[0], character[1])
+        });
+    }
+
+    function clear() {
+        mkeys = []
+        var table = document.getElementById("char_stats");
+        table.innerHTML = "";
+    }
+
+    // Add character to the big table.
+    function add_character(character) {
+        var stats_div = document.getElementById("char_stats");
+        let table = document.createElement('table');
+        let thead = document.createElement('thead');
+        let tbody = document.createElement('tbody');
+
+        // Styling
+        table.style = "display: inline-block; padding-right: 20px;";
+
+        // Creating and adding data to first row of the table
+        let row_1 = document.createElement('tr');
+        var headings = [];
+        headings.push(document.createElement('th'));
+        headings[0].innerHTML = "Character";
+        headings.push(document.createElement('th'));
+        headings[1].innerHTML = "Dungeon";
+        headings.push(document.createElement('th'));
+        headings[2].innerHTML = "Fortified";
+        headings.push(document.createElement('th'));
+        headings[3].innerHTML = "Tyrannical";
+
+        headings.forEach(heading => {
+            row_1.appendChild(heading);
+        });
+        thead.appendChild(row_1);
+
+        for(var i = 0; i < character.tyranical.length; i++) {
+            // Creating and adding data to second row of the table
+            let row = document.createElement('tr');
+            let row_data = [];
+            row_data.push(document.createElement('td'));
+            row_data.push(document.createElement('td'));
+            row_data.push(document.createElement('td'));
+            row_data.push(document.createElement('td'));
+            row_data[0].innerHTML = character.name;
+            row_data[1].innerHTML = character.tyranical[i][0];
+            row_data[2].innerHTML = character.tyranical[i][1];
+            row_data[3].innerHTML = character.fortified[i][1];
+            row_data.forEach(element => {
+                row.appendChild(element);
+            });
+            tbody.appendChild(row);
+        }
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+
+        // Adding the entire table to the body tag
+        document.getElementById("char_stats").appendChild(table);
+
+    }
+
+    function add_all() {
+        mkeys.forEach(character => {
+                add_character(character);
+        });
+    }
+
+    function calc_optimal() {
+        if(mkeys.length == 0) {
+            load_characters();
+        }
+        if(progress == total) {
+            var avgmkeys = {tyranical: [], fortified: []};
+            for(var i = 0; i < mkeys.length; i++) {
+                for(var j = 0; j < mkeys[0].length; j++) {
+                    avgmkeys.tyranical.push();
+                }
+            }
+        }
+    }
+</script>
