@@ -4,8 +4,8 @@ Fetches data of raider.io and compares the key levels to find the optimal dungeo
 Using [Cors Anywhere](https://github.com/Rob--W/cors-anywhere) for the requests.
 
 ## Prerequsist
-Node.js
-A browser
+- Node.js
+- Browser
 
 ## How to use
 - Extract the project
@@ -16,3 +16,5 @@ A browser
 - Enter the char names and realms as: name, realm
 - Click Fetch
 - Click Compute
+
+Enjoy!
