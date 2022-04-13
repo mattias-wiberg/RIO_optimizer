@@ -3,7 +3,7 @@ Fetches data of raider.io and compares the key levels to find the dungeon which 
 ![Website Interface Image](/fQnBzgQ8lQ.png?raw=true)![Website Table Image](/kDaucACh0E.png?raw=true)<br>
 Using [Cors Anywhere](https://github.com/Rob--W/cors-anywhere) for the requests.
 
-## Prerequsist
+## Prerequisites
 - Node.js
 - Browser
 
