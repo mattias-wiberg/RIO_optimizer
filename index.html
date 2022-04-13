@@ -10,6 +10,7 @@ Gragorr, Tarren-Mill</textarea>
 <br>
 <button onclick="load_characters()">Fetch</button> 
 <button onclick="calc_optimal()">Compute</button>
+<button onclick="add_all()">Show All</button>
 <button onclick="clear()">Clear</button>
 <script>
     var mkeys = [];
@@ -185,7 +186,7 @@ Gragorr, Tarren-Mill</textarea>
             load_characters();
         }
         if(progress == total) {
-            add_all();
+            //add_all();
             var avgChar = {name: "Average", realm: "None", tyranical: [], fortified: []};
             for(var i = 0; i < mkeys[0].tyranical.length; i++) {
                 avgChar.tyranical.push([mkeys[0].tyranical[i][0], 0]);
